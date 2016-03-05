@@ -74,7 +74,6 @@ if '%errorlevel%' NEQ '0' (
 
 :set_ip
     netsh interface ip set address name=%interface_name% static %IP_Addr% %Sub_Mask% %D_Gate% 1
-    ::ECHO %errorlevel%
     IF ERRORLEVEL 1 GOTO if_set_again
     IF ERRORLEVEL 0 ipconfig /renew && CLS && GOTO ping_test
     
@@ -100,7 +99,7 @@ if '%errorlevel%' NEQ '0' (
     IF ERRORLEVEL 3 CLS && GOTO test3
     IF ERRORLEVEL 2 CLS && GOTO test2
     IF ERRORLEVEL 1 CLS && GOTO test1
-    ::Fail
+    ::choice fail
     CLS
     ECHO Error input, please input again.
     ECHO.
