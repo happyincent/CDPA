@@ -1,8 +1,8 @@
 ::/*Author：DDL
-:: *Date：Mar. 6, 2016    */
+:: *Date：Mar. 7, 2016    */
 
 @ECHO off
-SETLOCAL
+SETLOCAL ENABLEDELAYEDEXPANSION 
 chcp 65001
 SET interface_name="乙太網路"
 
@@ -29,19 +29,18 @@ if '%errorlevel%' NEQ '0' (
     CD /D "%~dp0"
 ::--------------------------------------
 
-
 ::------------Set IP--------------------
 :choose_dorm
     CLS
     ECHO Set IP
     ECHO.
-    SET /p dorm_num=Which Dorm ('Upper case' ABCDEFGHL, 1234, T:Go test, Q:Exit)? 
-    if %dorm_num%==T CLS && GOTO ping_test
+    SET /p "dorm_num=Which Dorm ('Upper case' ABCDEFGHL, 1234, T:Go test, Q:Exit)? " || GOTO choose_dorm
+    if %dorm_num%==T CLS & GOTO ping_test
     if %dorm_num%==Q GOTO END
     GOTO set_Sub_Mask
     
 :set_Sub_Mask
-    for /f "tokens=1-2 delims= " %%a in (dorm.txt) do ( 
+    for /f "tokens=1-2 delims= " %%a in (dorm.txt) do (
         if %%a==%dorm_num%_Mask (
             ECHO Sub_Mask: %%b
             SET Sub_Mask=%%b
@@ -51,7 +50,7 @@ if '%errorlevel%' NEQ '0' (
     GOTO if_set_again
 
 :set_D_Gate
-    for /f "tokens=1-2 delims= " %%a in (dorm.txt) do ( 
+    for /f "tokens=1-2 delims= " %%a in (dorm.txt) do (
         if %%a==%dorm_num%_Gate (
             ECHO D_Gate: %%b
             SET D_Gate=%%b
@@ -63,7 +62,7 @@ if '%errorlevel%' NEQ '0' (
 :choose_room
     ECHO.
     SET /p room_num=Which room and bed num (ex: xxx-x)? 
-    for /f "tokens=1-2 delims= " %%a in (dorm.txt) do ( 
+    for /f "tokens=1-2 delims= " %%a in (dorm.txt) do (
         if %%a==%dorm_num%%room_num% (
             ECHO IP_Addr: %%b
             SET IP_Addr=%%b
@@ -75,14 +74,13 @@ if '%errorlevel%' NEQ '0' (
 :set_ip
     netsh interface ip set address name=%interface_name% static %IP_Addr% %Sub_Mask% %D_Gate% 1
     IF ERRORLEVEL 1 GOTO if_set_again
-    IF ERRORLEVEL 0 ipconfig /renew && CLS && GOTO ping_test
+    IF ERRORLEVEL 0 ipconfig /renew && CLS & GOTO ping_test
     
 :if_set_again
     CHOICE /C YN /M "Error input, set again(Y), go test(N)?"
-    IF ERRORLEVEL 2 CLS && GOTO ping_test
+    IF ERRORLEVEL 2 CLS & GOTO ping_test
     IF ERRORLEVEL 1 GOTO choose_dorm
 ::--------------------------------------
-
 
 ::-----------Ping Test------------------
 :ping_test
@@ -95,10 +93,10 @@ if '%errorlevel%' NEQ '0' (
     CHOICE /C 123456
     IF ERRORLEVEL 6 GOTO END
     IF ERRORLEVEL 5 GOTO choose_dorm
-    IF ERRORLEVEL 4 CLS && GOTO test4
-    IF ERRORLEVEL 3 CLS && GOTO test3
-    IF ERRORLEVEL 2 CLS && GOTO test2
-    IF ERRORLEVEL 1 CLS && GOTO test1
+    IF ERRORLEVEL 4 CLS & GOTO test4
+    IF ERRORLEVEL 3 CLS & GOTO test3
+    IF ERRORLEVEL 2 CLS & GOTO test2
+    IF ERRORLEVEL 1 CLS & GOTO test1
     ::choice fail
     CLS
     ECHO Error input, please input again.
@@ -109,23 +107,19 @@ if '%errorlevel%' NEQ '0' (
     ECHO.
     SET /p ping_cmd=Enter command: ping 
     %SystemRoot%\system32\ping.exe %ping_cmd%
-    pause
-    CLS && GOTO ping_test
+    pause && CLS & GOTO ping_test
 
 :test3
     %SystemRoot%\system32\ipconfig /all
-    pause
-    CLS && GOTO ping_test
+    pause && CLS & GOTO ping_test
     
 :test2
     %SystemRoot%\system32\ping.exe fb.com
-    pause
-    CLS && GOTO ping_test    
+    pause && CLS & GOTO ping_test    
     
 :test1
     %SystemRoot%\system32\ping.exe 8.8.8.8
-    pause
-    CLS && GOTO ping_test
+    pause && CLS & GOTO ping_test
 ::--------------------------------------
 
 :END
