@@ -30,12 +30,13 @@ if '%errorlevel%' NEQ '0' (
 ::--------------------------------------
 
 ::------------Set IP--------------------
+SET if_set_gateway=0
 :choose_dorm
     CLS
     ECHO Set IP
     ECHO.
     SET /p "dorm_num=Which Dorm ('Upper case' ABCDEFGHL, 1234, T:Go test, Q:Exit)? " || GOTO choose_dorm
-    if %dorm_num%==T SET if_set_gateway=0 & CLS & GOTO ping_test
+    if %dorm_num%==T CLS & GOTO ping_test
     if %dorm_num%==Q GOTO END
     GOTO set_Sub_Mask
     
