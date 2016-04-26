@@ -1,8 +1,8 @@
 ::/*Author：DDL
-:: *Date：Mar. 16, 2016    */
+:: *Date：April. 26, 2016    */
 
 @ECHO off
-SETLOCAL 
+SETLOCAL
 chcp 65001
 SET interface_name="乙太網路"
 
@@ -29,20 +29,42 @@ if '%errorlevel%' NEQ '0' (
     CD /D "%~dp0"
 ::--------------------------------------
 
-::------------Set IP--------------------
-SET if_set_gateway=0
+::-------------------Main-------------------
+:main
+    SET if_set_gateway=0
+    CLS
+    ECHO 1.Goto "Set IP & Sub_Mask & D_Gate"
+    ECHO.
+    ECHO 2.Goto "Ping Test"
+    ECHO.
+    ECHO 3.Exit
+    ECHO.
+    CHOICE /C 123
+    IF ERRORLEVEL 3 CLS & GOTO END
+    IF ERRORLEVEL 2 CLS & GOTO ping_test
+    IF ERRORLEVEL 1 CLS & GOTO choose_dorm
+    ::choice fail
+    CLS
+    ECHO Error input, please input again.
+    ECHO.
+    GOTO main
+::--------------------------------------
+
+::-------------------Set IP & Sub_Mask & D_Gate-------------------
 :choose_dorm
     CLS
-    ECHO Set IP
+    ECHO Set IP ^& Sub_Mask ^& D_Gate
     ECHO.
-    SET /p "dorm_num=Which Dorm ('Upper case' ABCDEFGHL, 1234, T:Go test, Q:Exit)? " || GOTO choose_dorm
-    if %dorm_num%==T CLS & GOTO ping_test
-    if %dorm_num%==Q GOTO END
+    ECHO /* The following choice is Case-Insensitive */
+    ECHO.
+    SET /p "dorm_num=Which Dorm (ABCDEFGHL, 1234, T:Go "Ping Test", Q:Exit)? " || GOTO choose_dorm
+    if /I %dorm_num%==T CLS & GOTO ping_test
+    if /I %dorm_num%==Q GOTO END
     GOTO set_Sub_Mask
     
 :set_Sub_Mask
     for /f "tokens=1-2 delims= " %%a in (dorm.txt) do (
-        if %%a==%dorm_num%_Mask (
+        if /I %%a==%dorm_num%_Mask (
             ECHO Sub_Mask: %%b
             SET Sub_Mask=%%b
             GOTO set_D_Gate
@@ -52,7 +74,7 @@ SET if_set_gateway=0
 
 :set_D_Gate
     for /f "tokens=1-2 delims= " %%a in (dorm.txt) do (
-        if %%a==%dorm_num%_Gate (
+        if /I %%a==%dorm_num%_Gate (
             ECHO D_Gate: %%b
             SET D_Gate=%%b
             SET if_set_gateway=1
@@ -65,16 +87,17 @@ SET if_set_gateway=0
     ECHO.
     SET /p room_num=Which room and bed num (ex: xxx-x)? 
     for /f "tokens=1-2 delims= " %%a in (dorm.txt) do (
-        if %%a==%dorm_num%%room_num% (
+        if /I %%a==%dorm_num%%room_num% (
             ECHO IP_Addr: %%b
             SET IP_Addr=%%b
-            GOTO set_ip
+            GOTO set_interface
         )
     )
     GOTO if_set_again
 
-:set_ip
+:set_interface
     netsh interface ip set address name=%interface_name% static %IP_Addr% %Sub_Mask% %D_Gate% 1
+    pause
     IF ERRORLEVEL 1 GOTO if_set_again
     IF ERRORLEVEL 0 ipconfig /renew && CLS & GOTO ping_test
     
@@ -84,15 +107,16 @@ SET if_set_gateway=0
     IF ERRORLEVEL 1 GOTO choose_dorm
 ::--------------------------------------
 
-::-----------Ping Test------------------
+
+::-------------------Ping Test-------------------
 :ping_test
     ECHO Ping Test Opts
     ECHO.
     ECHO 1.ping 8.8.8.8     2.ping fb.com     3.ping "parameters"
     ECHO.
-    ECHO 4.ping gateway     5.ping arista     6.ipconfig /all
+    ECHO 4.ping gateway     5.ping arista     6.ipconfig     /all
     ECHO.
-    ECHO 7.Back to Set IP                     8.Exit
+    ECHO 7.Back to "Set IP & Sub_Mask & D_Gate"            8.Exit
     ECHO.
     CHOICE /C 12345678
     IF ERRORLEVEL 8 GOTO END
