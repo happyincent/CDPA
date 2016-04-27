@@ -52,7 +52,7 @@ if '%errorlevel%' NEQ '0' (
     set choices=""
 
     CLS
-    ECHO Set IP ^& Sub_Mask ^& D_Gate - set interface name
+    ECHO Set IP ^& Sub_Mask ^& D_Gate - select interface name
     ECHO.
     
     for /f "skip=2 tokens=3*" %%A in ('netsh interface show interface') do (
@@ -63,7 +63,7 @@ if '%errorlevel%' NEQ '0' (
     )
     
     ECHO.    
-    choice /C !choices! /M "Select Interface: " /N
+    choice /C !choices! /M "Select Ethernet Interface: " /N
     set level=%ERRORLEVEL%
 
     ::choice fail
@@ -73,7 +73,7 @@ if '%errorlevel%' NEQ '0' (
     
 :choose_dorm
     CLS
-    ECHO Set IP ^& Sub_Mask ^& D_Gate - choose room
+    ECHO Set IP ^& Sub_Mask ^& D_Gate - choose dorm and room
     ECHO.
     ECHO /* The following choice is Case-Insensitive */
     ECHO.
@@ -118,13 +118,13 @@ if '%errorlevel%' NEQ '0' (
 :set_interface
     netsh interface ip set address name=%interface_name% static %IP_Addr% %Sub_Mask% %D_Gate% 1
     pause
-    IF ERRORLEVEL 1 GOTO if_set_again
+    IF ERRORLEVEL 1 GOTO set_interface_name
     IF ERRORLEVEL 0 ipconfig /renew && GOTO ping_test
     
 :if_set_again
     CHOICE /C YN /M "Error input, set again(Y), go test(N)?"
     IF ERRORLEVEL 2 GOTO ping_test
-    IF ERRORLEVEL 1 GOTO set_interface_name
+    IF ERRORLEVEL 1 GOTO choose_dorm
 ::--------------------------------------
 
 
