@@ -2,9 +2,8 @@
 :: *Date：April. 27, 2016    */
 
 @ECHO off
-SETLOCAL
+SETLOCAL enableDelayedExpansion
 chcp 65001
-SET interface_name="乙太網路"
 
 ::-------------------GotAdmin-------------------
 REM --> Check for permissions
@@ -33,24 +32,48 @@ if '%errorlevel%' NEQ '0' (
 :main
     SET if_set_gateway=0
     CLS
-    ECHO 1.Goto "Set IP & Sub_Mask & D_Gate"
+    ECHO 1.Go "Set IP & Sub_Mask & D_Gate"
     ECHO.
-    ECHO 2.Goto "Ping Test"
+    ECHO 2.Go "Ping Test"
     ECHO.
     ECHO 3.Exit
     ECHO.
     CHOICE /C 123
     IF ERRORLEVEL 3 GOTO END
     IF ERRORLEVEL 2 GOTO ping_test
-    IF ERRORLEVEL 1 CLS & GOTO choose_dorm
+    IF ERRORLEVEL 1 CLS & GOTO set_interface_name
     ::choice fail
     GOTO main
 ::--------------------------------------
 
 ::-------------------Set IP & Sub_Mask & D_Gate-------------------
+:set_interface_name
+    set count=0
+    set choices=""
+
+    CLS
+    ECHO Set IP ^& Sub_Mask ^& D_Gate - set interface name
+    ECHO.
+    
+    for /f "skip=2 tokens=3*" %%A in ('netsh interface show interface') do (
+        set /a count+=1
+        set arr!count!=%%B
+        set choices=!choices!!count!
+        echo [!count!] %%B
+    )
+    
+    ECHO.    
+    choice /C !choices! /M "Select Interface: " /N
+    set level=%ERRORLEVEL%
+
+    ::choice fail
+    if %level% EQU 0 GOTO set_interface_name
+    ::choice success
+    set interface_name=!arr%level%! && GOTO choose_dorm
+    
 :choose_dorm
     CLS
-    ECHO Set IP ^& Sub_Mask ^& D_Gate
+    ECHO Set IP ^& Sub_Mask ^& D_Gate - choose room
     ECHO.
     ECHO /* The following choice is Case-Insensitive */
     ECHO.
@@ -101,7 +124,7 @@ if '%errorlevel%' NEQ '0' (
 :if_set_again
     CHOICE /C YN /M "Error input, set again(Y), go test(N)?"
     IF ERRORLEVEL 2 GOTO ping_test
-    IF ERRORLEVEL 1 GOTO choose_dorm
+    IF ERRORLEVEL 1 GOTO set_interface_name
 ::--------------------------------------
 
 
@@ -114,11 +137,11 @@ if '%errorlevel%' NEQ '0' (
     ECHO.
     ECHO 4.ping gateway     5.ping arista     6.ipconfig     /all
     ECHO.
-    ECHO 7.Back to "Set IP & Sub_Mask & D_Gate"            8.Exit
+    ECHO 7.Go "Set IP & Sub_Mask & D_Gate"                 8.Exit
     ECHO.
     CHOICE /C 12345678
     IF ERRORLEVEL 8 GOTO END
-    IF ERRORLEVEL 7 GOTO choose_dorm
+    IF ERRORLEVEL 7 GOTO set_interface_name
     IF ERRORLEVEL 6 CLS & GOTO test6
     IF ERRORLEVEL 5 CLS & GOTO test5
     IF ERRORLEVEL 4 CLS & GOTO test4
