@@ -1,5 +1,5 @@
 ::/*Author：DDL
-:: *Date：April. 27, 2016    */
+:: *Date：May. 25, 2016    */
 
 @ECHO off
 SETLOCAL enableDelayedExpansion
@@ -124,12 +124,16 @@ if '%errorlevel%' NEQ '0' (
     CHOICE /C YN /M "Error input, set again(Y), go test(N)?" /N
     IF ERRORLEVEL 2 GOTO ping_test
     IF ERRORLEVEL 1 GOTO choose_dorm
+    ::choice fail
+    GOTO if_set_again
     
 :if_change_set
     ECHO.
     CHOICE /C 01 /M "Change IP Setting, Yes(1), No(0) go to Ping Test?" /N
     IF ERRORLEVEL 2 GOTO set_interface
     IF ERRORLEVEL 1 GOTO ping_test
+    ::choice fail
+    GOTO if_change_set
 ::--------------------------------------
 
 
