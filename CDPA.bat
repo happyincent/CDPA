@@ -31,6 +31,7 @@ if '%errorlevel%' NEQ '0' (
 ::-------------------Main-------------------
 :main
     SET if_set_gateway=0
+    SET interface_name=
     CLS
     ECHO 1.Go "Set IP & Sub_Mask & D_Gate"
     ECHO.
@@ -41,10 +42,18 @@ if '%errorlevel%' NEQ '0' (
     CHOICE /C 123
     IF ERRORLEVEL 3 GOTO END
     IF ERRORLEVEL 2 GOTO ping_test
-    IF ERRORLEVEL 1 CLS & GOTO set_interface_name
+    IF ERRORLEVEL 1 CLS & GOTO check_if_set
     ::choice fail
     GOTO main
 ::--------------------------------------
+
+::-------------------check if set-------------------
+:check_if_set
+    for /F "tokens=1-2 delims= " %%a in (CDPA.bat) do (
+        SET interface_name=%%b
+    )
+    if "%interface_name%"=="" GOTO set_interface_name
+    GOTO choose_dorm
 
 ::-------------------Set IP & Sub_Mask & D_Gate-------------------
 :set_interface_name
@@ -69,7 +78,10 @@ if '%errorlevel%' NEQ '0' (
     ::choice fail
     if %level% EQU 0 GOTO set_interface_name
     ::choice success
-    set interface_name=!arr%level%! && GOTO choose_dorm
+    set interface_name=!arr%level%!
+    ECHO.>> CDPA.bat
+    ECHO ::REM %interface_name%>> CDPA.bat
+    GOTO choose_dorm
     
 :choose_dorm
     CLS
@@ -150,7 +162,7 @@ if '%errorlevel%' NEQ '0' (
     ECHO.
     CHOICE /C 12345678
     IF ERRORLEVEL 8 GOTO END
-    IF ERRORLEVEL 7 GOTO set_interface_name
+    IF ERRORLEVEL 7 GOTO check_if_set
     IF ERRORLEVEL 6 CLS & GOTO test6
     IF ERRORLEVEL 5 CLS & GOTO test5
     IF ERRORLEVEL 4 CLS & GOTO test4
