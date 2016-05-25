@@ -3,7 +3,6 @@
 
 @ECHO off
 SETLOCAL enableDelayedExpansion
-chcp 65001
 
 ::-------------------GotAdmin-------------------
 REM --> Check for permissions
@@ -27,6 +26,8 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 ::--------------------------------------
+
+for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
 
 ::-------------------Main-------------------
 :main
@@ -77,10 +78,17 @@ if '%errorlevel%' NEQ '0' (
 
     ::choice fail
     if %level% EQU 0 GOTO set_interface_name
-    ::choice success
+    
+    ::choice success    
     set interface_name=!arr%level%!
+    
+    ::write to file
+    chcp 65001
     ECHO.>> CDPA.bat
     ECHO ::REM %interface_name%>> CDPA.bat
+    chcp %_codepage%
+
+    ::goto next
     GOTO choose_dorm
     
 :choose_dorm
