@@ -75,7 +75,7 @@ if '%errorlevel%' NEQ '0' (
     CLS
     ECHO Set IP ^& Sub_Mask ^& D_Gate - choose dorm and room
     ECHO.
-    ECHO /* The following choice is Case-Insensitive */
+    ECHO /* Case-Insensitive */
     ECHO.
     SET /p "dorm_num=Which Dorm (ABCDEFGHL, 1234, T:Go "Ping Test", Q:Exit)? " || GOTO choose_dorm
     if /I %dorm_num%==T GOTO ping_test
@@ -110,21 +110,26 @@ if '%errorlevel%' NEQ '0' (
         if /I %%a==%dorm_num%%room_num% (
             ECHO IP_Addr: %%b
             SET IP_Addr=%%b
-            GOTO set_interface
+            GOTO if_change_set
         )
     )
     GOTO if_set_again
 
 :set_interface
     netsh interface ip set address name=%interface_name% static %IP_Addr% %Sub_Mask% %D_Gate% 1
-    pause
-    IF ERRORLEVEL 1 GOTO set_interface_name
-    IF ERRORLEVEL 0 ipconfig /renew && GOTO ping_test
+    IF ERRORLEVEL 1 pause & GOTO set_interface_name
+    IF ERRORLEVEL 0 ipconfig /renew %interface_name% & pause && GOTO ping_test
     
 :if_set_again
-    CHOICE /C YN /M "Error input, set again(Y), go test(N)?"
+    CHOICE /C YN /M "Error input, set again(Y), go test(N)?" /N
     IF ERRORLEVEL 2 GOTO ping_test
     IF ERRORLEVEL 1 GOTO choose_dorm
+    
+:if_change_set
+    ECHO.
+    CHOICE /C 01 /M "Change IP Setting, Yes(1), No(0) go to Ping Test?" /N
+    IF ERRORLEVEL 2 GOTO set_interface
+    IF ERRORLEVEL 1 GOTO ping_test
 ::--------------------------------------
 
 
