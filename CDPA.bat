@@ -1,5 +1,5 @@
 ::/*Author：DDL
-:: *Date：May. 25, 2016    */
+:: *Date：Sep. 14, 2016    */
 
 @ECHO off
 SETLOCAL enableDelayedExpansion
@@ -25,9 +25,6 @@ if '%errorlevel%' NEQ '0' (
     if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
     pushd "%CD%"
     CD /D "%~dp0"
-::--------------------------------------
-
-for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
 
 ::-------------------Main-------------------
 :main
@@ -46,7 +43,6 @@ for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
     IF ERRORLEVEL 1 CLS & GOTO check_if_set
     ::choice fail
     GOTO main
-::--------------------------------------
 
 ::-------------------check if set-------------------
 :check_if_set
@@ -83,6 +79,7 @@ for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
     set interface_name=!arr%level%!
     
     ::write to file
+    for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
     chcp 65001
     ECHO.>> CDPA.bat
     ECHO ::REM %interface_name%>> CDPA.bat
@@ -136,9 +133,16 @@ for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
     GOTO if_set_again
 
 :set_interface
-    netsh interface ip set address name=%interface_name% static %IP_Addr% %Sub_Mask% %D_Gate% 1
+    netsh interface ipv4 set address name=%interface_name% static %IP_Addr% %Sub_Mask% %D_Gate% 1
     IF ERRORLEVEL 1 pause & GOTO set_interface_name
-    IF ERRORLEVEL 0 ipconfig /renew %interface_name% & pause && GOTO ping_test
+    IF ERRORLEVEL 0 ipconfig /renew %interface_name% && GOTO set_dnsservers
+    
+:set_dnsservers
+    netsh interface ipv4 delete dnsservers name=%interface_name% all >nul
+    netsh interface ipv4 set dnsserver name=%interface_name% static 8.8.8.8 primary validate=no
+    netsh interface ipv4 add dnsserver name=%interface_name% 140.117.205.1 index=2 validate=no
+    pause
+    GOTO ping_test
     
 :if_set_again
     CHOICE /C YN /M "Error input, set again(Y), go test(N)?" /N
@@ -154,19 +158,17 @@ for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
     IF ERRORLEVEL 1 GOTO ping_test
     ::choice fail
     GOTO if_change_set
-::--------------------------------------
-
 
 ::-------------------Ping Test-------------------
 :ping_test
     CLS
     ECHO Ping Test Opts
     ECHO.
-    ECHO 1.ping 8.8.8.8     2.ping fb.com     3.ping "parameters"
+    ECHO 1.ping 8.8.8.8     2.ping -t 8.8.8.8   3.ping "parameters"
     ECHO.
-    ECHO 4.ping gateway     5.ping arista     6.ipconfig     /all
+    ECHO 4.ping gateway     5.ping arista       6.ipconfig /all
     ECHO.
-    ECHO 7.Go "Set IP & Sub_Mask & D_Gate"                 8.Exit
+    ECHO 7.Go "Set IP & Sub_Mask & D_Gate"      8.Exit
     ECHO.
     CHOICE /C 12345678
     IF ERRORLEVEL 8 GOTO END
@@ -200,7 +202,7 @@ for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
     pause && GOTO ping_test
    
 :test2
-    %SystemRoot%\system32\ping.exe fb.com
+    %SystemRoot%\system32\ping.exe -t 8.8.8.8
     pause && GOTO ping_test    
     
 :test1
