@@ -1,8 +1,9 @@
 ::/*Author：DDL
-:: *Date：Sep. 14, 2016    */
+:: *Date：Sep. 30, 2016    */
 
 @ECHO off
 SETLOCAL enableDelayedExpansion
+chcp 65001
 
 ::-------------------GotAdmin-------------------
 REM --> Check for permissions
@@ -79,11 +80,8 @@ if '%errorlevel%' NEQ '0' (
     set interface_name=!arr%level%!
     
     ::write to file
-    for /f "tokens=2 delims=:" %%I in ('chcp') do set "_codepage=%%I"
-    chcp 65001
     ECHO.>> CDPA.bat
     ECHO ::REM %interface_name%>> CDPA.bat
-    chcp %_codepage%
 
     ::goto next
     GOTO choose_dorm
@@ -139,8 +137,8 @@ if '%errorlevel%' NEQ '0' (
     
 :set_dnsservers
     netsh interface ipv4 delete dnsservers name=%interface_name% all >nul
-    netsh interface ipv4 set dnsserver name=%interface_name% static 8.8.8.8 primary validate=no
-    netsh interface ipv4 add dnsserver name=%interface_name% 140.117.205.1 index=2 validate=no
+    netsh interface ipv4 set dnsserver name=%interface_name% static 140.117.205.1 primary validate=no
+    netsh interface ipv4 add dnsserver name=%interface_name% 8.8.8.8 index=2 validate=no
     pause
     GOTO ping_test
     
