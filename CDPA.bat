@@ -1,5 +1,5 @@
 ::/*Author：DDL
-:: *Date：Sep. 30, 2016    */
+:: *Date：Dec. 2, 2016    */
 
 @ECHO off
 SETLOCAL enableDelayedExpansion
@@ -47,10 +47,10 @@ if '%errorlevel%' NEQ '0' (
 
 ::-------------------check if set-------------------
 :check_if_set
-    for /F "tokens=1-2 delims= " %%a in (CDPA.bat) do (
+    for /F "tokens=1-2 delims=*" %%a in (CDPA.bat) do (
         SET interface_name=%%b
     )
-    if "%interface_name%"=="" GOTO set_interface_name
+    if '%interface_name%'=='' GOTO set_interface_name
     GOTO choose_dorm
 
 ::-------------------Set IP & Sub_Mask & D_Gate-------------------
@@ -77,11 +77,11 @@ if '%errorlevel%' NEQ '0' (
     if %level% EQU 0 GOTO set_interface_name
     
     ::choice success    
-    set interface_name=!arr%level%!
+    set interface_name="!arr%level%!"
     
     ::write to file
     ECHO.>> CDPA.bat
-    ECHO ::REM %interface_name%>> CDPA.bat
+    ECHO ::REM*%interface_name%>> CDPA.bat
 
     ::goto next
     GOTO choose_dorm
@@ -137,8 +137,8 @@ if '%errorlevel%' NEQ '0' (
     
 :set_dnsservers
     netsh interface ipv4 delete dnsservers name=%interface_name% all >nul
-    netsh interface ipv4 set dnsserver name=%interface_name% static 140.117.205.1 primary validate=no
-    netsh interface ipv4 add dnsserver name=%interface_name% 8.8.8.8 index=2 validate=no
+    netsh interface ipv4 set dnsserver name=%interface_name% static 8.8.4.4 primary validate=no
+    netsh interface ipv4 add dnsserver name=%interface_name% 140.117.205.1 index=2 validate=no
     pause
     GOTO ping_test
     
